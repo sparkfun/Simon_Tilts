@@ -33,11 +33,12 @@ local.properties
 ## Eagle
 #############
 
-# Ignore the board and schematic backup files (and the csv BOMs)
+# Ignore the board and schematic backup files (and the csv, ods BOMs)
 *.b#?
 *.s#?
 *.csv#
 *.csv
+*.ods
 *.G??
 *.ZIP
 *.TXT
