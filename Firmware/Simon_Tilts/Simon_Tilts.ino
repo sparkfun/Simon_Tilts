@@ -52,6 +52,8 @@ int game_pattern [13] = {0,1,2,3,4,5,1,2,3,4,5,1,2};
 int game_length = 0;
 
 int notes[6] = {NOTE_D4, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_C5, NOTE_D5}; // pentatonic scale in D
+boolean waiting_mode = true;
+
 
 void setup(){
  Serial.begin(57600); 
@@ -100,6 +102,22 @@ void setup(){
 }
 
 void loop(){
+  
+  // waiting mode
+  while(waiting_mode){
+    
+    int prev_pos = read_position_IR();
+    blink_all(50);
+    if(prev_pos != read_position_IR()) 
+    {
+     Serial.println("change detected... exiting waiting mode");
+     delay(1000); 
+     waiting_mode = false;
+    }
+    Serial.println(read_position_IR(), DEC);
+    
+    
+  }
   
   set_level_variables(level); // this adjusts moves_to_win, game_length, game_length_increment, playback_delay_time
   
@@ -217,7 +235,7 @@ void loop(){
   //Serial.println("listening for you to tumble the pattern...");
   
   Serial.print("Get Ready, GO!!");
-  delay(1000);
+  //delay(1000);
   
   listen_for_pattern();
   
@@ -325,7 +343,7 @@ void listen_for_pattern(){
   // if they change to the wrong position, indicate failure!
   // if they move to the correct next step, then increment the game pattern and listen for the next position.
 
- for(int i = 0; i<=game_length;i++){
+ for(int i = 1; i<=game_length;i++){
    int timeout = 0;
    int wrong_positions = 0;
    while(timeout<50){
@@ -336,8 +354,8 @@ void listen_for_pattern(){
       {
 //      Serial.print("you tumbled correct:");
 //      Serial.println(current_box_position);
-//      blink_fade_quick(current_box_position);
-      blink_quick(current_box_position, 50);
+      blink_fade_quick(current_box_position);
+//      blink_quick(current_box_position, playback_delay_time);
       break;
       }
     
@@ -345,6 +363,7 @@ void listen_for_pattern(){
         Serial.print("Timed out on position ");
         Serial.println(i);
         blink_fail();
+        waiting_mode = true;
         game_length = 0; // this gets us out of listen_for_pattern()
         level = 1;
         fail = 1;
@@ -369,6 +388,7 @@ void listen_for_pattern(){
       game_length = 0; // this gets us out of listen_for_pattern()
       level = 1;
       fail = 1;
+      waiting_mode = true;
       break;
     }
 
@@ -388,16 +408,16 @@ void listen_for_pattern(){
          play_winner();
          game_length = 0; // this gets us out of listen_for_pattern()
          fail = 1; // this resets the game
-         moves_to_win += 3; // each time you win, make it more difficult.
+ //        moves_to_win += 3; // each time you win, make it more difficult.
          level += 1; // go to next level
          }
          else{
 //   blink_quick(current_box_position);
-     digitalWrite(led_gnd_pin, LOW);
-     digitalWrite(led_pin[current_box_position], HIGH);
-     delay(2000);
-     digitalWrite(led_pin[current_box_position], LOW);
-     digitalWrite(led_gnd_pin, HIGH);
+//     digitalWrite(led_gnd_pin, LOW);
+//     digitalWrite(led_pin[current_box_position], HIGH);
+//     delay(2000);
+//     digitalWrite(led_pin[current_box_position], LOW);
+//     digitalWrite(led_gnd_pin, HIGH);
      delay(1000);
          }
    }
@@ -477,7 +497,7 @@ void blink_quick(int num, int delay_time){
 void show_game_pattern(){
      // show pattern to user via terminal (and LEDs blinks).
   Serial.print("\n\r\n\rgame_pattern:");
-  for(int i=0;i<=game_length;i++){
+  for(int i=1;i<=game_length;i++){
   Serial.print(game_pattern[i]);
   //BLINK LED pattern
      int led = game_pattern[i];
@@ -533,18 +553,19 @@ void play_winner(void){
     }
     
     noTone(12);
+    delay(1000);
 }
 
 void set_level_variables(int level)
 {
   if(level == 1)
   {
-    moves_to_win = 4;
-    playback_delay_time = (400 - (game_length*50)); // start slow, then increase playback time as the game_length gets longer
+    moves_to_win = 5;
+    playback_delay_time = 400; // start slow
   }
   else if(level == 2)
   {
-    moves_to_win = 6;
+    moves_to_win = 7;
     playback_delay_time = 100;
   }
   else if(level >= 3)
