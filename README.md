@@ -15,7 +15,7 @@ Repository Contents
 License Information
 -------------------
 The hardware is released under [Creative Commons Share-alike 3.0](http://creativecommons.org/licenses/by-sa/3.0/).  
-The firmware is released under the [MIT License](http://opensource.org/licenses/MIT).
+The firmware is released under beerware license
 
 Hardware author: Pete Lewis @ SparkFun Electonics  
 Firmware original author: Pete Lewis @ SparkFun Electronics
