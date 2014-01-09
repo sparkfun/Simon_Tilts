@@ -2,21 +2,21 @@
 *  Simon Tilts
 *  Originally written by Pete Lewis January 2014
 *  SparkFun Electronics
-*  Beerware Licence. Feel free to use/tweak this, but if you meet me at a bar, you can buy me a beer.
+*  Beerware License. Feel free to use/tweak this, but if you meet me at a bar, you can buy me a beer.
 *  
 *  This code is meant to be used with SFE's Simon Tilts thru-hole soldering kit.
 *  It can be found here: https://www.sparkfun.com/products/12634
 *  
 *  It is an educational kit that is not only meant to teach thru-hole soldering,
-*  but it also challanges the player to practice memory and orientation skills.
+*  but it also challenges the player to practice memory and orientation skills.
 *  
 *  This is intended to create a pattern game, similar to the Simon Says, that involves motion.
 *  It uses 3 IR tilt sensors to sense the position of the PCB in relation to gravity.
 *  All 6 sides of the PCB has an LED on it, these are used to indicate the next tilt direction of the pattern.
-*  The buzzer is also used to assotiate a tone with each position.
+*  The buzzer is also used to associate a tone with each position.
 *
 *  To start the game, the user must tilt the PCB in any direction. Then repeat the pattern you see.
-*  Remember, tilting an LED upward is the equivilant of "pressing that button".
+*  Remember, tilting an LED upward is the equivalent of "pressing that button".
 */
 
 #include "pitches.h" // This header file defines the values needed to make "scaled" tones on the buzzer
@@ -26,7 +26,7 @@
 
 // Define an array to include the pins for all six LEDs.
   // They are used during gameplay to blink a specific pattern that the player must follow
-  // They are hardwared in the PCB. This means they will never change, so they can be a constant int
+  // They are hardwired in the PCB. This means they will never change, so they can be a constant int
 const int led_pin[6] = {4,2,7,6,5,3}; 
 
 // Define the pin for the GND return on all six LEDs
@@ -40,7 +40,7 @@ const int led_gnd_pin = 10;
   // Really, they are connected to the infrared detector next to each tilt sensor
   // But because their ultimate purpose is to sense tilt position, we named them "tilt_pin"
   // If we do an analogRead() on these pins, they will return a different value depending on
-  // where the BB is in the tilt arm sensor. See explaination below for more info.
+  // where the BB is in the tilt arm sensor. See explanation below for more info.
 const int tilt_pin[3] = {14,15,16};
 
 //------------------------------------------------------------------------------------------------
@@ -72,10 +72,10 @@ boolean fail = false;
   // See function set_level_variables() for more info
 int level = 1;
                
-// Define playback_delay_time varaiable (MILLISECONDS)
+// Define playback_delay_time variable (MILLISECONDS)
   // This affects the overall speed at which the pattern is shown to the player
   // The pattern may be as little as one (and as many as 20) "steps"
-  // This variable is the amount of miliseconds delay in between each step's blink
+  // This variable is the amount of milliseconds delay in between each step's blink
   // In level one, the delay time is 400 ms (pretty slow). It will decrease more and more in higher levels
   // See function set_level_variables() for more info
 int playback_delay_time; 
@@ -114,7 +114,7 @@ int next_possible_positions[4] = {};
 //------------------------------------------------------------------------------------------------
 // TILT SENSOR SPECIFIC VARIABLE DECLARATIONS
 
-// Infrared tilt sensor explaination
+// Infrared tilt sensor explanation
 // The tilt sensors are little tubes with small metal ball bearings (aka "BB"s) in them
 // Each BB can fall to either end of the tube, and is pulled by gravity
 // On one end of the tube (closest to the PCB) there is a "look through" hole
@@ -190,7 +190,7 @@ void setup()
     // 3. While continuing to hold game upside down, turn the game back on again and wait a moment.
   if(read_position_once() == 0) // read_position_once() will return a "0" if the game is held upside down
   {
-    while(1) // Stay in nighlight mode forever (or at least until you cyle power) 
+    while(1) // Stay in nightlight mode forever (or at least until you cyle power) 
     {
       nightlight_fade(random(0,6)); 
     }
@@ -260,16 +260,16 @@ void loop()
   // (1) it compares each new reading with the previous reading,
   // If they are the same, then it stores the active reading and moves on to take another
   // If it's different, then it doesn't take it as a good reading, and assumes it's noise.
-  // The for loop ends and the reading doesn't change current_tilt_position. So essentially, this reading failed (it was too noisey).
+  // The for loop ends and the reading doesn't change current_tilt_position. So essentially, this reading failed (it was too noisy).
   // This makes the player actually hold the game still for 50 readings (which is actually only a few mili seconds.
   // (2) It compares each reading to correct_tilt_byte[] array.
-  // This makes sure that the BBs are settled in the tilt arm and not causeing an erronious data.
+  // This makes sure that the BBs are settled in the tilt arm and not causing an erroneous data.
   // It converts the raw byte returned from read_position_once() into a number from 0 to 6. 
   // This will be the ultimate position #. It is more useful this way, because we can use it to call 
   // the corresponding LED from led_pin[] array
 void read_position_w_debounce()
 {
-  int pos_array[100]; // used to store position readings in a row. We want to make sure that the posisiton has stayed there for at least 50 readings before we make it a new reading.
+  int pos_array[100]; // used to store position readings in a row. We want to make sure that the position has stayed there for at least 50 readings before we make it a new reading.
   int valid_reading = 0;
   for(int j = 0;j<50;j++)
   {
@@ -383,9 +383,9 @@ void listen_for_pattern()
 
 
 // Define a function to blink one LED for a set amount of time with sound
-  // Send this an LED number (0-5) and a delay time (miliseconds)
+  // Send this an LED number (0-5) and a delay time (milliseconds)
   // This function is only used in listen_for_pattern()
-  // It is used when a player rotates to the inccorrect position
+  // It is used when a player rotates to the incorrect position
   // and Simon Tilts then wants to show you where you should have rotated to.
 void blink_led(int num, int delay_time)
 {
@@ -461,7 +461,7 @@ void blink_player_timed_out(void)
 // Define a function that will show various blinky action and sound buzzing
   // This is used to control what the player sees and hears when they win each level
   // It's basically a way to call winner_blinky different amounts of times at different speeds
-  // This way when you win each level, you see a unique distplay and it "sort of" shows you 
+  // This way when you win each level, you see a unique display and it "sort of" shows you 
   // which level you just completed
 void show_winner_blinkies()
 {
@@ -555,7 +555,7 @@ void show_game_pattern()
   // If we take an analogRead() on one of the infrared detectors, we can know
   // if the BB is present or not (that is, blocking the IR emitter).
   // Through some testing we found that when the BB is at the bottom of the tilt arm,
-  // and blocking the IR, the analogRead will consistantly return a value greater that 875. 
+  // and blocking the IR, the analogRead will consistently return a value greater that 875. 
   // This is our "threshold" value.
 byte read_position_once()
 {
@@ -613,7 +613,7 @@ void wait_for_user_input_change(void)
   // For use in creating a nice random game pattern
   // This function acts as a set of "rules" to ensure we don't have two of the same positions in a row for any game pattern
   // You send it the current position, and it will change the values in the array next_possible_positions[].
-  // The new values will only include positions that are adjacent to the current posistion
+  // The new values will only include positions that are adjacent to the current position
 void lookup_possible_positions(int tilt_pos)
 {
   switch (tilt_pos)
@@ -666,7 +666,7 @@ void lookup_possible_positions(int tilt_pos)
   // These for loops are from ARDUINO>>EXAMPLES>>ANALOG>>FADING
   // the fadeValue increment changes the speed of the fade
 void nightlight_fade(int num){
-  digitalWrite(led_gnd_pin, HIGH); // Turn the GND return HIGH, which effectly turns all LEDs off
+  digitalWrite(led_gnd_pin, HIGH); // Turn the GND return HIGH, which effectively turns all LEDs off
   digitalWrite(led_pin[num], HIGH); // Turn the LED we'd like to fade on to HIGH
   
   // Fade IN, note because we are using PWM on the GND return to control the fade,
