@@ -9,8 +9,8 @@ This is a new take on the original Simon Says game. Instead of pressing buttons,
 Repository Contents
 -------------------
 
-* **/firmware** - Source code, an Arduino Sketch
-* **/hardware** - Eagle design files (Schematic and Board)
+* **/Firmware** - Source code, an Arduino Sketch
+* **/Hardware** - Eagle design files (Schematic and Board)
 
 License Information
 -------------------
