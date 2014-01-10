@@ -2,7 +2,8 @@
 *  Simon Tilts
 *  Originally written by Pete Lewis January 2014
 *  SparkFun Electronics
-*  Beerware License. Feel free to use/tweak this, but if you meet me at a bar, you can buy me a beer.
+*  Beerware License. Feel free to use/tweak this, but if you meet me at a bar, 
+*  you can buy me a beer.
 *  
 *  This code is meant to be used with SFE's Simon Tilts thru-hole soldering kit.
 *  It can be found here: https://www.sparkfun.com/products/12634
@@ -10,40 +11,46 @@
 *  It is an educational kit that is not only meant to teach thru-hole soldering,
 *  but it also challenges the player to practice memory and orientation skills.
 *  
-*  This is intended to create a pattern game, similar to the Simon Says, that involves motion.
-*  It uses 3 IR tilt sensors to sense the position of the PCB in relation to gravity.
-*  All 6 sides of the PCB has an LED on it, these are used to indicate the next tilt direction of the pattern.
-*  The buzzer is also used to associate a tone with each position.
+*  This is intended to create a pattern game, similar to the Simon Says, that 
+*  involves motion. It uses 3 IR tilt sensors to sense the position of the PCB 
+*  in relation to gravity. All 6 sides of the PCB has an LED on it, these are 
+*  used to indicate the next tilt direction of the pattern. The buzzer is also 
+*  used to associate a tone with each position.
 *
-*  To start the game, the user must tilt the PCB in any direction. Then repeat the pattern you see.
-*  Remember, tilting an LED upward is the equivalent of "pressing that button".
+*  To start the game, the user must tilt the PCB in any direction. Then repeat 
+*  the pattern you see. Remember, tilting an LED upward is the equivalent of 
+*  "pressing that button".
 */
 
-#include "pitches.h" // This header file defines the values needed to make "scaled" tones on the buzzer
+#include "pitches.h" // This header file defines the values needed to make 
+                     // "scaled" tones on the buzzer
 
-//------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // HARDWARE PIN DECLARATIONS
 
 // Define an array to include the pins for all six LEDs.
-  // They are used during gameplay to blink a specific pattern that the player must follow
-  // They are hardwired in the PCB. This means they will never change, so they can be a constant int
+  // They are used during gameplay to blink a specific pattern that the player 
+  // must follow. They are hardwired in the PCB. This means they will never 
+  // change, so they can be a constant int
 const int led_pin[6] = {4,2,7,6,5,3}; 
 
 // Define the pin for the GND return on all six LEDs
   // All six LEDs are wired to return on this one single pin: "led_gnd_pin"
   // Most of the time, we will be turning on only one LED at a time
-  // To turn on a specific LED, we must turn that LED pin HIGH, and this led_gnd_pin LOW
-  // We chose pin 10 because it can do PWM. This allows us to do PWM on all six LEDs
+  // To turn on a specific LED, we must turn that LED pin HIGH, and this 
+  // led_gnd_pin LOW. We chose pin 10 because it can do PWM. This allows us 
+  // to do PWM on all six LEDs
 const int led_gnd_pin = 10;
 
 // Define an array to include the pins connected to the tilt sensors
-  // Really, they are connected to the infrared detector next to each tilt sensor
-  // But because their ultimate purpose is to sense tilt position, we named them "tilt_pin"
-  // If we do an analogRead() on these pins, they will return a different value depending on
-  // where the BB is in the tilt arm sensor. See explanation below for more info.
+  // Really, they are connected to the infrared detector next to each tilt 
+  // sensor. But because their ultimate purpose is to sense tilt position, we 
+  // named them "tilt_pin". If we do an analogRead() on these pins, they will 
+  // return a different value depending on where the BB is in the tilt arm 
+  // sensor. See explanation below for more info.
 const int tilt_pin[3] = {14,15,16};
 
-//------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // GAMEPLAY VARIABLE DECLARATIONS
 
 // Define an array to include six NOTES that will be used during gameplay             
@@ -54,8 +61,9 @@ const int tilt_pin[3] = {14,15,16};
 const int notes[6] = {NOTE_D4, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_C5, NOTE_D5}; 
 
 // Define a boolean to know whether we are in waiting mode or not
-  // Simon tilts effectively has three modes (so far): waiting, play, and nightlight
-  // If nightlight mode is not entered during setup(), then it can be in "waiting" or "not waiting"
+  // Simon tilts effectively has three modes (so far): waiting, play, and 
+  // nightlight. If nightlight mode is not entered during setup(), then it can 
+  // be in "waiting" or "not waiting".
 boolean waiting_mode = true;
 
 // Define a variable to keep track of when a player makes a mistake (aka fails)
@@ -63,7 +71,7 @@ boolean waiting_mode = true;
   // "False" means there is no failure, we will initialize it this way
 boolean fail = false;
                   
-//------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // LEVEL SPECIFIC VARIABLE DECLARATIONS
 
 // Define a variable to keep track of which level the player is in
@@ -75,12 +83,14 @@ int level = 1;
 // Define playback_delay_time variable (MILLISECONDS)
   // This affects the overall speed at which the pattern is shown to the player
   // The pattern may be as little as one (and as many as 20) "steps"
-  // This variable is the amount of milliseconds delay in between each step's blink
-  // In level one, the delay time is 400 ms (pretty slow). It will decrease more and more in higher levels
-  // See function set_level_variables() for more info
+  // This variable is the amount of milliseconds delay in between each step's 
+  // blink. In level one, the delay time is 400 ms (pretty slow). It will decrease
+  // more and more in higher levels. See function set_level_variables() for more 
+  // info.
 int playback_delay_time; 
 
-// Define a variable to keep track of how many moves it takes to win the current level
+// Define a variable to keep track of how many moves it takes to win the current 
+// level
   // It starts with 5, then it get's longer with each level
   // See function set_level_variables() for more info
 int moves_to_win; 
@@ -90,42 +100,50 @@ int moves_to_win;
   // It is randomly chosen each time the user enters a new level
   // Each level, it gets longer and longer.
   // This means it could get as long as 23 on level 10.
-  // It is *really* hard to complete level 3, so I'd be very excited to see someone win level 10 and break this array
-  // For most players they will only be using the first 9 spots of this array and then failing :)
+  // It is *really* hard to complete level 3, so I'd be very excited to see 
+  // someone win level 10 and break this array. For most players they will only 
+  // be using the first 9 spots of this array and then failing :)
 int game_pattern[23] = {};
 
 // Define a variable to keep track of the length of the current game
-  // This is the number of tilt positions in the pattern the user must repeat in order to advance each "partial-level"
-  // It is incremented each time there is a new random position added to game_pattern[]
-  // It is also compared with moves_to_win each time the player tilts correctly.
-  // This is how we know if the player has one the level yet, or if they are still building to moves_to_win
+  // This is the number of tilt positions in the pattern the user must repeat in 
+  // order to advance each "partial-level". It is incremented each time there is 
+  // a new random position added to game_pattern[]. It is also compared with 
+  // moves_to_win each time the player tilts correctly. This is how we know if 
+  // the player has one the level yet, or if they are still building to 
+  // moves_to_win.
 int game_length = 0;                      
 
-// Define an array to include the next possible positions that could be added to the game pattern
-  // This is necessary, so that when we randomly choose a pattern, it doesn't choose two of the same positions in a row
-  // Because this is a tilt motion game, it doesn't make sense if the pattern repeats on the current position
-  // We also use this array in combination with the function, lookup_possible_positions(), in order to 
-  // make the game pattern more user friendly for levels 1 and 2.
-  // We can ensure that the game pattern always moves from one position to an adjacent position,
-  // and not an "across" position (i.e. if you're on the top, then immediately blinking the bottom)
-  // See lookup_possible_positions() for more info
+// Define an array to include the next possible positions that could be added to 
+// the game pattern.
+  // This is necessary, so that when we randomly choose a pattern, it doesn't 
+  // choose two of the same positions in a row. Because this is a tilt motion 
+  // game, it doesn't make sense if the pattern repeats on the current position.
+  // We also use this array in combination with the function, 
+  // lookup_possible_positions(), in order to make the game pattern more user 
+  // friendly for levels 1 and 2. We can ensure that the game pattern always moves
+  // from one position to an adjacent position, and not an "across" position 
+  // (i.e. if you're on the top, then immediately blinking the bottom).
+  // See lookup_possible_positions() for more info.
 int next_possible_positions[4] = {};
 
-//------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // TILT SENSOR SPECIFIC VARIABLE DECLARATIONS
 
 // Infrared tilt sensor explanation
-// The tilt sensors are little tubes with small metal ball bearings (aka "BB"s) in them
-// Each BB can fall to either end of the tube, and is pulled by gravity
-// On one end of the tube (closest to the PCB) there is a "look through" hole
+// The tilt sensors are little tubes with small metal ball bearings (aka "BB"s) 
+// in them. Each BB can fall to either end of the tube, and is pulled by gravity.
+// On one end of the tube (closest to the PCB) there is a "look through" hole.
 // With an IR emitter and detector on either side of the "look through" hole,
 // we can see if the BB is present or not.
-// Combining three of these tilt sensors positioned carefully, you can sense 6 positions.
-// TOP, BOTTOM, LEFT, RIGHT, FRONT, BACK (these are defined while holding the game so that the 
-// silk "SIMON TILTS" reads left to right, and is facing upwards)
+// Combining three of these tilt sensors positioned carefully, you can sense 
+// 6 positions: TOP, BOTTOM, LEFT, RIGHT, FRONT, BACK (these are defined while 
+// holding the game so that the silk "SIMON TILTS" reads left to right, and is 
+// facing upwards)
 
 // The readings from each IR detector are as follows for each position
-// Each infrared detector is defined by it's corresponding pin on the micro (it's "tilt_pin")
+// Each infrared detector is defined by it's corresponding pin on the micro 
+// (it's "tilt_pin")
 
 //   POSITION     tilt_pin[0]    tilt_pin[1]    tilt_pin[2]       DECIMAL
 //------------------------------------------------------------------------
@@ -137,22 +155,24 @@ int next_possible_positions[4] = {};
 //   BACK         0              1              1                 3
 
 // Define an array of "good" readings from the tilt sensors
-  // Notice how 5 and 6 are not included as possibilities in the table above
-  // This is because of the particular angle and placement of the tilt arms
-  // 5 and 6 are impossible, so in an effort to debounce the data, we create the following array
-  // The order of this array is important, because it corresponds with the led_pin[] array.
+  // Notice how 5 and 6 are not included as possibilities in the table above.
+  // This is because of the particular angle and placement of the tilt arms.
+  // 5 and 6 are impossible, so in an effort to debounce the data, we create the 
+  // following array. The order of this array is important, because it 
+  // corresponds with the led_pin[] array.
 const byte correct_tilt_byte[6] = {7,4,5,3,2,0};
 
 // Define a variable used to store the actual current physical position
-  // This is determined by which tilt position the player is currently holding the game
-  // It is updated every time we call read_position_w_debounce()
-  // It is also used in listen_for_pattern() to determine gameplay
+  // This is determined by which tilt position the player is currently holding 
+  // the game. It is updated every time we call read_position_w_debounce().
+  // It is also used in listen_for_pattern() to determine gameplay.
 int current_tilt_position;
 
 void setup()
 {
   Serial.begin(57600); // For debugging
-  randomSeed(analogRead(A7)); // We use random() to create the unique game pattern for each level
+  randomSeed(analogRead(A7)); // We use random() to create the unique game 
+                              // pattern for each level.
                               // This seed helps make it "more" random
   // LED SETUP 
     // Turn all six to OUTPUTS
@@ -181,14 +201,16 @@ void setup()
   // EASTER EGG!!! -- CHECK FOR NIGHTLIGHT MODE --
     // If the user turns on the game while holding it upside down, 
     // then it will go into a special mode called "Nightlight mode"
-    // This is in setup() because we only want it to check once (right after powering up)
-    // If the game is held in any other position, then it will continue into the main loop 
-    // and play default game mode
+    // This is in setup() because we only want it to check once (right after 
+    // powering up). If the game is held in any other position, then it will 
+    // continue into the main loop and play default game mode.
     // To enter night light mode, follow these three steps:
     // 1. Turn game off
     // 2. Hold game upside down
-    // 3. While continuing to hold game upside down, turn the game back on again and wait a moment.
-  if(read_position_once() == 0) // read_position_once() will return a "0" if the game is held upside down
+    // 3. While continuing to hold game upside down, turn the game back on again 
+    //    and wait a moment.
+  if(read_position_once() == 0) // read_position_once() will return a "0" if the 
+                                // game is held upside down
   {
     while(1) // Stay in nightlight mode forever (or at least until you cyle power) 
     {
@@ -199,14 +221,17 @@ void setup()
 
 void loop()
 {
-  // Each time we come around to the beginning of the main loop, check to see if we want to be in
-  // waiting mode. If waiting mode is engaged, then we will enter the following while loop and wait 
-  // for the player to move the game in any way, to indicate they want to start a new game.
-  // When "waiting_mode" is set to false, then this while loop is ignored and normal game play happens.
+  // Each time we come around to the beginning of the main loop, check to see if 
+  // we want to be in waiting mode. If waiting mode is engaged, then we will 
+  // enter the following while loop and wait for the player to move the game in 
+  // any way, to indicate they want to start a new game.
+  // When "waiting_mode" is set to false, then this while loop is ignored and 
+  // normal game play happens.
   // "waiting_mode" is only changed to false in wait_for_user_input_change()
   while(waiting_mode) wait_for_user_input_change();
   
-  set_level_variables(level); // this adjusts moves_to_win, game_length, playback_delay_time
+  set_level_variables(level); // this adjusts moves_to_win, game_length, 
+                              // and playback_delay_time
   
   if(fail == 1){
     Serial.println("Starting Over...");
@@ -217,27 +242,43 @@ void loop()
   game_length++;
   Serial.print("game_length:");
   Serial.println(game_length);
-  lookup_possible_positions(game_pattern[game_length-1]); // the "-1" means were looking at the last position added (not the one were trying to add).
-  int previous_game_pattern_1 = game_pattern[1]; // remember the step 1 (aka the second step of pattern)
-                                                 // We will use it below to ensure we never have the same first and second step
-                                                 // This helps keep the pattern different each time.
+  
+  // Look up possible positions
+  // the "gamelength-1" means were looking at the last position added 
+  // (not the one were trying to add).
+  lookup_possible_positions(game_pattern[game_length-1]); 
+  
+  // Remember the step 1 (aka the second step of pattern)
+  // We will use it below to ensure we never have the same first and second step
+  // This helps keep the pattern different each time.
+  int previous_game_pattern_1 = game_pattern[1]; 
+                                                                        
   game_pattern[game_length] = next_possible_positions[random(0,4)];
 
   if(game_length == 1) // help avoid doing the same pattern as previous game
   { 
     while(game_pattern[game_length] == previous_game_pattern_1)
     {
-      game_pattern[game_length] = next_possible_positions[random(0,4)]; // keep pulling new random positions, until it doesn't equal the previous pattern step 1
+      // keep pulling new random positions, until it doesn't equal the previous 
+      // pattern step 1
+      game_pattern[game_length] = next_possible_positions[random(0,4)]; 
     }
   }
   
-  if(level >= 3) // because we're at level 3+, add a second pattern, this means we get two added after each "user repeat"
+  // If we're at level 3+, add a second pattern, this means we get two 
+  // added after each "user repeat"
+  if(level >= 3) 
   {
     game_length++;
-    game_pattern[game_length] = random(0,6); // no rules, it can grab any next position it likes (i.e. the "across LED")
+    game_pattern[game_length] = random(0,6); // no rules, 
+    // i.e. it can grab any next position it likes (i.e. the "across LED")
     if(game_pattern[game_length] == game_pattern[game_length-1])
     {
-      while(game_pattern[game_length] == game_pattern[game_length-1]) game_pattern[game_length] = random(0,6); // prevents two of the same in a row
+      // prevent two of the same in a row
+      while(game_pattern[game_length] == game_pattern[game_length-1]) 
+      {
+        game_pattern[game_length] = random(0,6); 
+      }
     }
   }
   
@@ -247,46 +288,63 @@ void loop()
   
   Serial.print("Get Ready, GO!!");
   
-  listen_for_pattern(); // Listen for correct pattern (handles timeout and failures)
-                        // because gamelength and moves_to_win are global, it knows when you've won or lost
+  listen_for_pattern(); // Listen for correct pattern (handles timeout and 
+  // failures). Because gamelength and moves_to_win are global, it knows when 
+  // you've won or lost
 }
 
-// Define a function to take lots of readings from the tilt sensors and debounce them into one usable position reading #
-  // This is a bit different than your standard averaging debounce of streaming data.
-  // In fact, it doesn't do any averaging at all.
+// Define a function to take lots of readings from the tilt sensors and debounce 
+// them into one usable position reading #
+  // This is a bit different than your standard averaging debounce of streaming 
+  // data. In fact, it doesn't do any averaging at all.
   // We make an array to store all the streaming readings.
   // We then starting filling the array with one reading at a time.
   // There are two important things going on with this function:
   // (1) it compares each new reading with the previous reading,
-  // If they are the same, then it stores the active reading and moves on to take another
-  // If it's different, then it doesn't take it as a good reading, and assumes it's noise.
-  // The for loop ends and the reading doesn't change current_tilt_position. So essentially, this reading failed (it was too noisy).
-  // This makes the player actually hold the game still for 50 readings (which is actually only a few mili seconds.
+  // If they are the same, then it stores the active reading and moves on to take 
+  // another. If it's different, then it doesn't take it as a good reading, and 
+  // assumes it's noise.
+  // The for loop ends and the reading doesn't change current_tilt_position. 
+  // So essentially, this reading failed (it was too noisy).
+  // This makes the player actually hold the game still for 50 readings 
+  // (which is actually only a few mili seconds).
   // (2) It compares each reading to correct_tilt_byte[] array.
-  // This makes sure that the BBs are settled in the tilt arm and not causing an erroneous data.
-  // It converts the raw byte returned from read_position_once() into a number from 0 to 6. 
-  // This will be the ultimate position #. It is more useful this way, because we can use it to call 
-  // the corresponding LED from led_pin[] array
+  // This makes sure that the BBs are settled in the tilt arm and not causing an 
+  // erroneous data. It converts the raw byte returned from read_position_once() 
+  // into a number from 0 to 6. This will be the ultimate position #. It is more 
+  // useful this way, because we can use it to call the corresponding LED from 
+  // led_pin[] array.
 void read_position_w_debounce()
 {
-  int pos_array[100]; // used to store position readings in a row. We want to make sure that the position has stayed there for at least 50 readings before we make it a new reading.
+  int pos_array[100]; // used to store position readings in a row. 
+  // We want to make sure that the position has stayed there for at least 
+  // 50 readings before we make it a new reading.
   int valid_reading = 0;
   for(int j = 0;j<50;j++)
   {
-    byte raw_tilt_input = read_position_once(); // take a single reading from the tilt sensors
-    for(int i = 0;i<6;i++) // compare the raw reading to the "known goods" in the correct_tilt_byte[] array.
-                           // Do it in a for loop so we can check all six.
+    // Take a single reading from the tilt sensors.
+    byte raw_tilt_input = read_position_once(); 
+    // Compare the raw reading to the "known goods" in the correct_tilt_byte[] 
+    // array. Do it in a for loop so we can check all six.
+    for(int i = 0;i<6;i++) 
     {
       if(raw_tilt_input == correct_tilt_byte[i]) 
       {
-        pos_array[j] = i; // convert to a number from 0 to 6 (i from this for loop will be 0-6), this will be our ultimate # to know the position
+        // Convert to a number from 0 to 6 (i from this for loop will be 0-6), 
+        // this will be our ultimate # to know the position.
+        pos_array[j] = i; 
         Serial.print(pos_array[j]);
         break;
       }
     }
-    if(j == 0) valid_reading += 1; // we will assume the first reading is always a valid reading, this keeps the total count correct
+    
+    // We will assume the first reading is always a valid reading.
+    // This keeps the total count correct.
+    if(j == 0) valid_reading += 1; 
     else{
-      if(pos_array[j] == pos_array[j-1]) valid_reading += 1; // check new reading against previous, if it's the same, increment valid_reading
+      // check new reading against previous, if it's the same, increment 
+      // valid_reading
+      if(pos_array[j] == pos_array[j-1]) valid_reading += 1; 
       else{
         delay(100);
         j=50;
@@ -296,12 +354,16 @@ void read_position_w_debounce()
   Serial.print("--");
   Serial.println(valid_reading);
   
-  if(valid_reading == 50) current_tilt_position = pos_array[0]; // only if we get 50 valid readings (all the same), do we take this as a solid good reading
-                                                                // and finally... set the current_tilt_position to the first reading in the pos_array[0]
+  // only if we get 50 valid readings (all the same), do we take this as a 
+  // solid good reading. And finally... set the current_tilt_position to the 
+  // first reading in the array, pos_array[0].
+  if(valid_reading == 50) current_tilt_position = pos_array[0]; 
+                                                                
 }
 
 
-// Define a function that listens for the correct pattern to be rotated by the player
+// Define a function that listens for the correct pattern to be rotated by the 
+// player
   // This is basically a for loop that goes through the current gamelength,
   // and listens for the player to tumble the correct pattern
   // It includes a timeout by rapping all of the "if's" in a while(timeout<50)
